@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -46,9 +45,8 @@ class EnjoilyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // google_fonts 9 memakai TextTheme dari package material_ui, jadi
-    // cukup ambil nama font-nya agar cocok dengan flutter/material.
-    final font = GoogleFonts.plusJakartaSans().fontFamily;
+    // Dibundel di pubspec.yaml agar semua ketebalan (400–800) ikut terpakai.
+    const font = 'PlusJakartaSans';
     return MaterialApp(
       title: 'Enjoily Pangkalan',
       debugShowCheckedModeBanner: false,

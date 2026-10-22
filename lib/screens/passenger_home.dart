@@ -259,12 +259,8 @@ class _PassengerHomeState extends State<PassengerHome> {
         final order = snapshot.data;
         return EnjTabBody(
           children: [
-            if (order == null) const _PromoBanner(),
-            _BalanceCard(
-              name: (widget.profile['display_name'] as String?) ?? 'Penumpang',
-              balance: _balance,
-              onTopUp: _openTopUp,
-            ),
+            if (order == null) ...[const _PromoBanner(), const _FeatureGrid()],
+            _BalanceCard(balance: _balance, onTopUp: _openTopUp),
             if (order != null)
               _ActiveOrderView(order: order, service: _service)
             else
@@ -463,80 +459,168 @@ class _PassengerHomeState extends State<PassengerHome> {
   }
 }
 
+/// Banner foto mobil (assets/images/banner_mobil.jpg). Tanpa foto, latar
+/// diganti gradasi hijau tua → kuning dengan ikon mobil seperti prototipe.
 class _PromoBanner extends StatelessWidget {
   const _PromoBanner();
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [EnjColors.brand, EnjColors.brand2],
-        ),
-      ),
-      child: Row(
-        spacing: 12,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 6,
-              children: [
-                const Text('Naik mobil listrik, bayar suka-suka',
-                    style: TextStyle(
-                        fontSize: 19, fontWeight: FontWeight.w800, color: Colors.white, height: 1.25)),
-                Text('1–3 km bayar sesukamu, minimal ${rupiah(minFare)}. Senyap, AC dingin.',
-                    style: const TextStyle(fontSize: 13, height: 1.4, color: Color(0xFFD4F3EC))),
-              ],
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 188),
+        child: Stack(
+          alignment: Alignment.centerLeft,
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/banner_mobil.jpg',
+                fit: BoxFit.cover,
+                alignment: Alignment.centerRight,
+                errorBuilder: (_, _, _) => const _BannerFallback(),
+              ),
             ),
-          ),
-          Container(
-            width: 52,
-            height: 52,
-            alignment: Alignment.center,
-            decoration: const BoxDecoration(color: EnjColors.sun, shape: BoxShape.circle),
-            child: const Text('⚡', style: TextStyle(fontSize: 24)),
-          ),
-        ],
+            // Gelap di kiri agar teks putih terbaca
+            const Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xE60E2A24), Color(0x990E2A24), Color(0x000E2A24)],
+                    stops: [0, 0.55, 0.9],
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 22, 18, 22),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 66,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const EnjBadge('Enjoily Pangkalan'),
+                        const SizedBox(height: 10),
+                        const Text('Naik mobil listrik, bayar suka-suka',
+                            style: TextStyle(
+                                fontSize: 21, fontWeight: FontWeight.w800, color: Colors.white, height: 1.2)),
+                        const SizedBox(height: 6),
+                        Text('Jarak 1–3 km sesukamu. Senyap, AC dingin, driver dikenal.',
+                            style: TextStyle(
+                                fontSize: 13, height: 1.35, color: Colors.white.withValues(alpha: 0.92))),
+                      ],
+                    ),
+                  ),
+                  const Spacer(flex: 34),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _BalanceCard extends StatelessWidget {
-  const _BalanceCard({required this.name, required this.balance, required this.onTopUp});
+class _BannerFallback extends StatelessWidget {
+  const _BannerFallback();
 
-  final String name;
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.bottomLeft,
+          end: Alignment.topRight,
+          colors: [Color(0xFF1E3A2E), Color(0xFF6B6A1E), Color(0xFFD9B91A)],
+          stops: [0.2, 0.6, 1],
+        ),
+      ),
+      child: Align(
+        alignment: const Alignment(1.15, 0.55),
+        child: Icon(Icons.electric_car, size: 120, color: Colors.white.withValues(alpha: 0.85)),
+      ),
+    );
+  }
+}
+
+/// Empat kartu keunggulan 2 × 2 di bawah banner.
+class _FeatureGrid extends StatelessWidget {
+  const _FeatureGrid();
+
+  static const _features = [
+    ('🔇', 'Aman, senyap dan AC dingin'),
+    ('💸', 'Bayar suka-suka 1–3 km'),
+    ('🛡️', 'Driver, plat, dan tombol darurat'),
+    ('📱', 'Bayar QR, VA Bank, atau Cash'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final c = EnjColors.of(context);
+    Widget tile((String, String) f) => Expanded(
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(14, 14, 12, 14),
+            decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 8,
+              children: [
+                Text(f.$1, style: const TextStyle(fontSize: 18)),
+                Text(f.$2,
+                    style: TextStyle(fontSize: 13, height: 1.3, fontWeight: FontWeight.w700, color: c.ink)),
+              ],
+            ),
+          ),
+        );
+    return Column(
+      spacing: 10,
+      children: [
+        for (var i = 0; i < _features.length; i += 2)
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              spacing: 10,
+              children: [tile(_features[i]), tile(_features[i + 1])],
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _BalanceCard extends StatelessWidget {
+  const _BalanceCard({required this.balance, required this.onTopUp});
+
   final int balance;
   final VoidCallback onTopUp;
 
   @override
   Widget build(BuildContext context) {
     final c = EnjColors.of(context);
-    return EnjCard(
-      children: [
-        Row(
-          spacing: 12,
-          children: [
-            const EnjAva('Rp', size: 40),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  EnjSub('Saldo $name'),
-                  Text(rupiah(balance),
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: c.ink)),
-                ],
-              ),
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 16, 14, 16),
+      decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(18)),
+      child: Row(
+        spacing: 12,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 2,
+              children: [
+                const EnjSub('Saldo Enjoily'),
+                Text(rupiah(balance),
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: c.ink)),
+              ],
             ),
-            EnjButton('Top Up', onPressed: onTopUp, kind: EnjButtonKind.alt, small: true),
-          ],
-        ),
-      ],
+          ),
+          EnjButton('Top up', onPressed: onTopUp, small: true),
+        ],
+      ),
     );
   }
 }
