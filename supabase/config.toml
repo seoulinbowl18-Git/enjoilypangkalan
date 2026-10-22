@@ -1,0 +1,4 @@
+# Hanya pengaturan fungsi; proyek dibuat di dashboard Supabase.
+[functions.send-otp-fonnte]
+# Dipanggil oleh Supabase Auth (bukan aplikasi), keamanannya lewat signature hook.
+verify_jwt = false

@@ -1,17 +1,37 @@
-# enjoily_mobile
+# Enjoily Pangkalan
 
-A new Flutter project.
+Aplikasi Flutter (Android, iOS, web) untuk pangkalan mobil listrik.
 
-## Getting Started
+```bash
+flutter run                          # mode demo, data contoh, tanpa login
+flutter run --dart-define=DEMO=false # pakai Supabase + halaman login
+```
 
-This project is a starting point for a Flutter application.
+## Login OTP WhatsApp (Fonnte)
 
-A few resources to get you started if this is your first Flutter project:
+Supabase tidak mengirim OTP sendiri. Lewat **Send SMS Hook**, kodenya diteruskan
+ke Edge Function `send-otp-fonnte`, lalu dikirim ke WhatsApp lewat Fonnte.
+Token Fonnte hanya disimpan di Supabase, tidak pernah di dalam aplikasi.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+1. **Deploy fungsi** (sekali, dari folder proyek):
+   ```bash
+   npx supabase login
+   npx supabase functions deploy send-otp-fonnte --project-ref tbjcfdwkqdrwsnzzbhpo --no-verify-jwt
+   ```
+2. **Authentication → Sign In / Providers → Phone**: aktifkan *Enable phone provider*.
+   Pilihan SMS provider (Twilio dll.) boleh dibiarkan, karena hook yang mengirim.
+3. **Authentication → Hooks → Send SMS hook**: aktifkan, tipe *HTTPS*, URL
+   `https://tbjcfdwkqdrwsnzzbhpo.supabase.co/functions/v1/send-otp-fonnte`.
+   Klik *Generate secret* dan salin nilainya (`v1,whsec_...`).
+4. **Edge Functions → Secrets**: tambahkan
+   - `FONNTE_TOKEN` = token device dari fonnte.com
+   - `SEND_SMS_HOOK_SECRET` = secret dari langkah 3
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Login Google
+
+- **Authentication → Providers → Google**: isi Client ID & Secret dari Google Cloud.
+- **Authentication → URL Configuration → Redirect URLs**: tambahkan
+  `io.supabase.enjoilypangkalan://login-callback/` (Android & iOS).
+  Belum perlu alamat web. Untuk mencoba di Chrome, jalankan
+  `flutter run -d chrome --web-port=3000 --dart-define=DEMO=false` dan tambahkan
+  `http://localhost:3000` juga.

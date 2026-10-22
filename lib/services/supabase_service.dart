@@ -86,10 +86,10 @@ class SupabaseService {
     return '+62$digits';
   }
 
-  /// Kirim kode OTP lewat WhatsApp. Butuh Phone provider (Twilio / WhatsApp)
-  /// aktif di Supabase → Authentication → Providers.
-  Future<void> sendWhatsAppOtp(String phone) => _guard(() => _client.auth
-      .signInWithOtp(phone: normalizePhone(phone), channel: OtpChannel.whatsapp));
+  /// Kirim kode OTP. Supabase tidak mengirim sendiri: Send SMS Hook meneruskannya
+  /// ke Edge Function send-otp-fonnte yang mengirim lewat WhatsApp (Fonnte).
+  Future<void> sendWhatsAppOtp(String phone) =>
+      _guard(() => _client.auth.signInWithOtp(phone: normalizePhone(phone)));
 
   Future<void> verifyPhoneOtp(String phone, String token) => _guard(() => _client.auth
       .verifyOTP(phone: normalizePhone(phone), token: token, type: OtpType.sms));
