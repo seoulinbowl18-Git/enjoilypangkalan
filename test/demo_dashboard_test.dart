@@ -32,6 +32,9 @@ void main() {
     // Tab Penumpang
     expect(find.text('Naik mobil listrik, bayar suka-suka'), findsOneWidget);
     expect(find.text('Rp25.000'), findsOneWidget);
+    // Kolom jemput ada di bawah banner & kartu fitur
+    await tester.scrollUntilVisible(find.text('Pakai lokasi saya'), 100,
+        scrollable: find.byType(Scrollable).first);
     await tester.enterText(find.byType(TextField).first, 'Depan pasar');
 
     Future<void> tapVisible(String text) async {

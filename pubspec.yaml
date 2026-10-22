@@ -61,6 +61,25 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  # Foto banner Penumpang (lihat assets/images/README.md).
+  assets:
+    - assets/images/
+
+  # Plus Jakarta Sans dibundel per ketebalan: google_fonts memuat tiap ketebalan
+  # sebagai keluarga font terpisah, sehingga teks w700/w800 tampil tipis.
+  fonts:
+    - family: PlusJakartaSans
+      fonts:
+        - asset: assets/fonts/PlusJakartaSans-400.ttf
+        - asset: assets/fonts/PlusJakartaSans-500.ttf
+          weight: 500
+        - asset: assets/fonts/PlusJakartaSans-600.ttf
+          weight: 600
+        - asset: assets/fonts/PlusJakartaSans-700.ttf
+          weight: 700
+        - asset: assets/fonts/PlusJakartaSans-800.ttf
+          weight: 800
+
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

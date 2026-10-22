@@ -39,7 +39,10 @@ class _DashboardShellState extends State<DashboardShell> {
         child: _PhoneFrame(
           child: Column(
             children: [
-              _Header(onSignOut: _isDemo ? null : _service.signOut),
+              _Header(
+                role: widget.profile['role'] as String?,
+                onSignOut: _isDemo ? null : _service.signOut,
+              ),
               Expanded(
                 child: IndexedStack(
                   index: _tab,
@@ -68,7 +71,7 @@ class _DashboardShellState extends State<DashboardShell> {
   }
 }
 
-/// Lebar maks 400. Di layar ≥ 500 px tampil sebagai bingkai ponsel (.phone).
+/// Lebar maks 430. Di layar ≥ 500 px tampil sebagai bingkai ponsel (.phone).
 class _PhoneFrame extends StatelessWidget {
   const _PhoneFrame({required this.child});
 
@@ -81,13 +84,13 @@ class _PhoneFrame extends StatelessWidget {
       builder: (context, box) {
         if (box.maxWidth < 500) {
           return Center(
-            child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 400), child: child),
+            child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 430), child: child),
           );
         }
         return Center(
           child: Container(
-            width: 400,
-            height: box.maxHeight < 780 ? box.maxHeight : 760,
+            width: 430,
+            height: box.maxHeight > 920 ? 900 : box.maxHeight - 20,
             decoration: BoxDecoration(
               color: c.bg,
               border: Border.all(color: c.ink, width: 8),
@@ -102,23 +105,27 @@ class _PhoneFrame extends StatelessWidget {
 }
 
 class _Header extends StatelessWidget {
-  const _Header({required this.onSignOut});
+  const _Header({required this.role, required this.onSignOut});
 
-  /// null = mode demo: tombol keluar diganti label "Demo".
+  static const _roleLabels = {'admin': 'Admin', 'driver': 'Driver', 'passenger': 'Penumpang'};
+
+  final String? role;
+
+  /// null = mode demo: tidak ada sesi untuk diakhiri.
   final VoidCallback? onSignOut;
 
   @override
   Widget build(BuildContext context) {
     final c = EnjColors.of(context);
     return Padding(
-      padding: EdgeInsets.fromLTRB(16, 14, onSignOut == null ? 16 : 4, 8),
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 10),
       child: Row(
         children: [
           Expanded(
             child: Align(
               alignment: Alignment.centerLeft,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(color: c.ink, borderRadius: BorderRadius.circular(20)),
                 child: Text.rich(
                   TextSpan(
@@ -139,23 +146,23 @@ class _Header extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(20)),
-            child: Text(
-              '⚡ Mobil listrik',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: c.accent),
+          Material(
+            color: c.card,
+            shape: const StadiumBorder(),
+            child: InkWell(
+              customBorder: const StadiumBorder(),
+              onTap: onSignOut ??
+                  () => ScaffoldMessenger.of(context)
+                      .showSnackBar(const SnackBar(content: Text('Mode demo — tidak perlu keluar'))),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                child: Text(
+                  '${_roleLabels[role] ?? 'Akun'} · Keluar',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: c.accent),
+                ),
+              ),
             ),
           ),
-          if (onSignOut == null)
-            const Padding(padding: EdgeInsets.only(left: 6), child: EnjBadge('Demo'))
-          else
-            IconButton(
-              tooltip: 'Keluar',
-              visualDensity: VisualDensity.compact,
-              onPressed: onSignOut,
-              icon: Icon(Icons.logout, size: 18, color: c.mute),
-            ),
         ],
       ),
     );

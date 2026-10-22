@@ -196,6 +196,8 @@ class EnjButton extends StatelessWidget {
         disabledBackgroundColor: bg,
         disabledForegroundColor: fg,
         elevation: 0,
+        // Web/desktop default-nya compact dan memangkas padding
+        visualDensity: VisualDensity.standard,
         minimumSize: Size.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         padding: small ? const EdgeInsets.symmetric(horizontal: 14, vertical: 9) : const EdgeInsets.all(14),
