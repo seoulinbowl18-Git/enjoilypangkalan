@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Error dari RPC / Edge Function. Pesan server diawali kode, mis.
@@ -69,7 +70,29 @@ class SupabaseService {
   Future<void> signUpPassenger(String email, String password, String name) => _guard(
       () => _client.auth.signUp(email: email, password: password, data: {'full_name': name}));
 
-  Future<void> signInWithGoogle() => _guard(() => _client.auth.signInWithOAuth(OAuthProvider.google));
+  /// Deep link kembali ke aplikasi setelah login Google di Android/iOS. Harus juga
+  /// didaftarkan di Supabase → Authentication → URL Configuration → Redirect URLs.
+  /// Di web cukup kembali ke halaman yang sama (null).
+  static const oauthRedirect = 'io.supabase.enjoilypangkalan://login-callback/';
+
+  Future<void> signInWithGoogle() => _guard(() => _client.auth
+      .signInWithOAuth(OAuthProvider.google, redirectTo: kIsWeb ? null : oauthRedirect));
+
+  /// "0812…" / "812…" / "+62812…" → "+62812…" (format E.164 yang diminta Supabase).
+  static String normalizePhone(String input) {
+    final digits = input.replaceAll(RegExp(r'\D'), '');
+    if (digits.startsWith('62')) return '+$digits';
+    if (digits.startsWith('0')) return '+62${digits.substring(1)}';
+    return '+62$digits';
+  }
+
+  /// Kirim kode OTP lewat WhatsApp. Butuh Phone provider (Twilio / WhatsApp)
+  /// aktif di Supabase → Authentication → Providers.
+  Future<void> sendWhatsAppOtp(String phone) => _guard(() => _client.auth
+      .signInWithOtp(phone: normalizePhone(phone), channel: OtpChannel.whatsapp));
+
+  Future<void> verifyPhoneOtp(String phone, String token) => _guard(() => _client.auth
+      .verifyOTP(phone: normalizePhone(phone), token: token, type: OtpType.sms));
 
   Future<void> signOut() => _client.auth.signOut();
 

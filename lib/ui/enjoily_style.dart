@@ -205,7 +205,7 @@ class EnjButton extends StatelessWidget {
         textStyle: TextStyle(
           fontSize: small ? 13 : 15,
           fontWeight: FontWeight.w800,
-          fontFamily: DefaultTextStyle.of(context).style.fontFamily,
+          fontFamily: Theme.of(context).textTheme.labelLarge?.fontFamily,
         ),
       ),
       child: Text(label),
@@ -326,7 +326,10 @@ class EnjField extends StatelessWidget {
     this.hint,
     this.numeric = false,
     this.decimal = false,
+    this.obscure = false,
+    this.keyboardType,
     this.onChanged,
+    this.onSubmitted,
   });
 
   final TextEditingController controller;
@@ -334,7 +337,10 @@ class EnjField extends StatelessWidget {
   final String? hint;
   final bool numeric;
   final bool decimal;
+  final bool obscure;
+  final TextInputType? keyboardType;
   final ValueChanged<String>? onChanged;
+  final ValueChanged<String>? onSubmitted;
 
   @override
   Widget build(BuildContext context) {
@@ -342,8 +348,11 @@ class EnjField extends StatelessWidget {
     final input = TextField(
       controller: controller,
       onChanged: onChanged,
+      onSubmitted: onSubmitted,
+      obscureText: obscure,
       textAlign: label == null ? TextAlign.start : TextAlign.end,
-      keyboardType: numeric || decimal ? TextInputType.numberWithOptions(decimal: decimal) : null,
+      keyboardType:
+          keyboardType ?? (numeric || decimal ? TextInputType.numberWithOptions(decimal: decimal) : null),
       inputFormatters: numeric && !decimal ? [FilteringTextInputFormatter.digitsOnly] : null,
       style: TextStyle(
           fontSize: label == null ? 14 : 15,
